@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promotion Prediction</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background-color: #f4f4f9; color: #333; padding: 20px; line-height: 1.6; }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        h2 { text-align: center; color: #e74c3c; margin-top: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        form { display: flex; flex-direction: column; gap: 15px; }
+        label { font-weight: bold; margin-bottom: 5px; color: #34495e; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; background-color: #f9f9f9; }
+        input:focus, select:focus { border-color: #3498db; outline: none; }
+        input[type="submit"] { background-color: #2ecc71; color: white; padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        input[type="submit"]:hover { background-color: #27ae60; }
+        .lang-selector { text-align: right; margin-bottom: 10px; }
+        .link { text-align: center; margin-top: 20px; }
+        .link a { color: #3498db; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="lang-selector">
+            <label for="language">🌍 Select Language:</label>
+            <select id="language" onchange="changeLanguage()">
+                <option value="en">English</option>
+                <option value="mr">मराठी (Marathi)</option>
+                <option value="hi">हिन्दी (Hindi)</option>
+                <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                <option value="gu">ગુજરાતી (Gujarati)</option>
+            </select>
+        </div>
+
+        <h1 id="title">Promotion Level Prediction</h1>
+        <form method="POST" action="/predict">
+            <label for="name" id="label-name">Name:</label>
+            <input type="text" name="name" id="name" required>
+
+            <label for="years_of_service" id="label-years">Years of Service:</label>
+            <input type="number" name="years_of_service" id="years_of_service" min="5" max="40" required>
+
+            <label for="NAAS_publication_factor" id="label-naas">NAAS Publication Factor:</label>
+            <input type="number" step="0.01" name="NAAS_publication_factor" id="NAAS_publication_factor" min="1" max="10" required>
+
+            <label for="office_punctuality" id="label-punctuality">Office Punctuality (%):</label>
+            <input type="number" name="office_punctuality" id="office_punctuality" min="0" max="100" required>
+
+            <label for="training_attendance" id="label-training">Training Attendance (%):</label>
+            <input type="number" name="training_attendance" id="training_attendance" min="0" max="100" required>
+
+            <label for="health_condition" id="label-health">Health Condition:</label>
+            <select name="health_condition" id="health_condition" required>
+                <option value="">Select Health Condition</option>
+                <option value="Poor" id="health-poor">Poor</option>
+                <option value="Average" id="health-average">Average</option>
+                <option value="Good" id="health-good">Good</option>
+            </select>
+
+            <input type="submit" value="Predict" id="predict-btn">
+        </form>
+
+        {% if prediction_text %}
+            <h2>{{ prediction_text }}</h2>
+        {% endif %}
+    </div>
+
+    <script>
+        const translations = {
+            "en": {
+                "title": "Promotion Level Prediction",
+                "label-name": "Name:",
+                "label-years": "Years of Service:",
+                "label-naas": "NAAS Publication Factor:",
+                "label-punctuality": "Office Punctuality (%):",
+                "label-training": "Training Attendance (%):",
+                "label-health": "Health Condition:",
+                "health-poor": "Poor",
+                "health-average": "Average",
+                "health-good": "Good",
+                "predict-btn": "Predict"
+            },
+            "mr": {
+                "title": "पदोन्नती स्तर अंदाज",
+                "label-name": "नाव:",
+                "label-years": "सेवेची वर्षे:",
+                "label-naas": "NAAS प्रकाशन गुण:",
+                "label-punctuality": "कार्यालय वेळपालन (%):",
+                "label-training": "प्रशिक्षण उपस्थिती (%):",
+                "label-health": "आरोग्य स्थिती:",
+                "health-poor": "खराब",
+                "health-average": "सरासरी",
+                "health-good": "चांगले",
+                "predict-btn": "भविष्यवाणी करा"
+            },
+            "hi": {
+                "title": "पदोन्नति स्तर भविष्यवाणी",
+                "label-name": "नाम:",
+                "label-years": "सेवा के वर्ष:",
+                "label-naas": "NAAS प्रकाशन कारक:",
+                "label-punctuality": "कार्यालय समयपालन (%):",
+                "label-training": "प्रशिक्षण उपस्थिति (%):",
+                "label-health": "स्वास्थ्य स्थिति:",
+                "health-poor": "खराब",
+                "health-average": "औसत",
+                "health-good": "अच्छा",
+                "predict-btn": "भविष्यवाणी करें"
+            },
+            "pa": {
+                "title": "ਤਰੱਕੀ ਪੱਧਰ ਦੀ ਪੇਸ਼ਗੋਈ",
+                "label-name": "ਨਾਮ:",
+                "label-years": "ਸੇਵਾ ਦੇ ਸਾਲ:",
+                "label-naas": "NAAS ਪ੍ਰਕਾਸ਼ਨ ਗੁਣਕ:",
+                "label-punctuality": "ਦਫ਼ਤਰ ਸਮੇਂ-ਪਾਬੰਦੀ (%):",
+                "label-training": "ਤਲ਼ੀਮ ਹਾਜ਼ਰੀ (%):",
+                "label-health": "ਸਿਹਤ ਦੀ ਹਾਲਤ:",
+                "health-poor": "ਮਾੜਾ",
+                "health-average": "ਔਸਤ",
+                "health-good": "ਚੰਗਾ",
+                "predict-btn": "ਅਨੁਮਾਨ ਲਗਾਓ"
+            },
+            "gu": {
+                "title": "પ્રમોશન સ્તર આગાહી",
+                "label-name": "નામ:",
+                "label-years": "સેવાના વર્ષો:",
+                "label-naas": "NAAS પ્રકાશન ફેક્ટર:",
+                "label-punctuality": "ઓફિસ સમયપાલન (%):",
+                "label-training": "પ્રશિક્ષણ હાજરી (%):",
+                "label-health": "આરોગ્ય સ્થિતિ:",
+                "health-poor": "ખરાબ",
+                "health-average": "સરેરાશ",
+                "health-good": "સારા",
+                "predict-btn": "અનુમાન લગાવો"
+            }
+        };
+
+        function changeLanguage() {
+            let lang = document.getElementById("language").value;
+            Object.keys(translations[lang]).forEach(id => {
+                document.getElementById(id).textContent = translations[lang][id];
+            });
+        }
+    </script>
+</body>
+</html>
